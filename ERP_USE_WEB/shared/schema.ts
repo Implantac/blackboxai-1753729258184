@@ -30,6 +30,26 @@ export const customers = pgTable("customers", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Suppliers table
+export const suppliers = pgTable("suppliers", {
+  id: serial("id").primaryKey(),
+  nome: text("nome").notNull(),
+  razaoSocial: text("razao_social"),
+  cnpj: text("cnpj").unique(),
+  email: text("email"),
+  telefone: text("telefone"),
+  endereco: text("endereco"),
+  cidade: text("cidade"),
+  estado: text("estado"),
+  cep: text("cep"),
+  contatoNome: text("contato_nome"),
+  contatoEmail: text("contato_email"),
+  contatoTelefone: text("contato_telefone"),
+  prazoEntrega: integer("prazo_entrega").default(0),
+  ativo: boolean("ativo").notNull().default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Products table
 export const products = pgTable("products", {
   id: serial("id").primaryKey(),
@@ -42,7 +62,41 @@ export const products = pgTable("products", {
   unidade: text("unidade").default("UN"),
   estoqueAtual: integer("estoque_atual").default(0),
   estoqueMinimo: integer("estoque_minimo").default(0),
+  estoqueMaximo: integer("estoque_maximo").default(0),
+  localizacao: text("localizacao"),
+  fornecedorId: integer("fornecedor_id").references(() => suppliers.id),
   ativo: boolean("ativo").notNull().default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Inventory movements table
+export const inventoryMovements = pgTable("inventory_movements", {
+  id: serial("id").primaryKey(),
+  productId: integer("product_id").references(() => products.id).notNull(),
+  tipo: text("tipo").notNull(), // entrada, saida, ajuste, transferencia
+  quantidade: integer("quantidade").notNull(),
+  quantidadeAnterior: integer("quantidade_anterior").notNull(),
+  quantidadeNova: integer("quantidade_nova").notNull(),
+  motivo: text("motivo"),
+  referencia: text("referencia"), // numero da nota, pedido, etc
+  custoUnitario: decimal("custo_unitario", { precision: 10, scale: 2 }),
+  dataMovimento: timestamp("data_movimento").defaultNow(),
+  usuarioId: integer("usuario_id").references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Product batches table
+export const productBatches = pgTable("product_batches", {
+  id: serial("id").primaryKey(),
+  productId: integer("product_id").references(() => products.id).notNull(),
+  lote: text("lote").notNull(),
+  quantidade: integer("quantidade").notNull(),
+  quantidadeDisponivel: integer("quantidade_disponivel").notNull(),
+  dataFabricacao: date("data_fabricacao"),
+  dataValidade: date("data_validade"),
+  custoUnitario: decimal("custo_unitario", { precision: 10, scale: 2 }),
+  fornecedorId: integer("fornecedor_id").references(() => suppliers.id),
+  notaFiscal: text("nota_fiscal"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
